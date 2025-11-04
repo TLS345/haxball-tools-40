@@ -1,7 +1,29 @@
-name: Launch Haxball
+name: Launch Haxball ↔ Discord Sync Haxball
 
 on:
   workflow_dispatch:
+    inputs:
+      HAXBALL_TOKEN:
+        description: "Enter your Haxball API token"
+        required: true
+      DISCORD_TOKEN:
+        description: "Enter your Discord bot token"
+        required: true
+      DISCORD_CHANNEL_ID:
+        description: "Enter your Discord channel ID"
+        required: true
+      ROOM_NAME:
+        description: "Room name to create"
+        required: false
+        default: "Teleese Room :)"
+      MAX_PLAYERS:
+        description: "Max players"
+        required: false
+        default: "10"
+      PUBLIC_ROOM:
+        description: "Should the room be public? (true/false)"
+        required: false
+        default: "true"
 
 jobs:
   start-room:
@@ -21,16 +43,18 @@ jobs:
           echo "📦 Installing required dependencies..."
           npm install discord.js haxball.js
 
-      - name: Run Haxball Core (keep alive for 6 hours)
+      - name: Run Haxball Core (6h runtime)
         env:
-          HAXBALL_TOKEN: ${{ secrets.HAXBALL_TOKEN }}
-          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
-          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+          HAXBALL_TOKEN: ${{ github.event.inputs.HAXBALL_TOKEN }}
+          DISCORD_TOKEN: ${{ github.event.inputs.DISCORD_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ github.event.inputs.DISCORD_CHANNEL_ID }}
+          ROOM_NAME: ${{ github.event.inputs.ROOM_NAME }}
+          MAX_PLAYERS: ${{ github.event.inputs.MAX_PLAYERS }}
+          PUBLIC_ROOM: ${{ github.event.inputs.PUBLIC_ROOM }}
         run: |
           echo "🚀 Starting Haxball ↔ Discord sync (6h runtime)..."
           node core.js &
           PID=$!
-          # keep it alive for 6 hours = 21600 seconds
           for i in $(seq 1 21600); do
             if ! ps -p $PID > /dev/null; then
               echo "❌ Process ended early (PID $PID). Exiting..."
@@ -40,3 +64,4 @@ jobs:
           done
           echo "⏰ 6 hours reached — stopping process."
           kill $PID || true
+
