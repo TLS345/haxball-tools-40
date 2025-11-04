@@ -4,36 +4,56 @@
 //      BY TLS / Teleese
 // ============================
 
+import readline from "readline";
 import { Client, GatewayIntentBits } from "discord.js";
 import HaxballJS from "haxball.js";
 
-
-
-const CONFIG = {
-  roomName: "Teleese Room :)", // put any name u want idc 
-  maxPlayers: 10,
-  public: true,
-
-  // .env variables too easy to edit for dumb guys 
-  haxballToken: process.env.HAXBALL_TOKEN,  
-  discordToken: process.env.DISCORD_TOKEN,
-  discordChannelId: process.env.DISCORD_CHANNEL_ID,
-};
-
-if (!CONFIG.haxballToken) {
-  console.error("❌ Missing Haxball token (HAXBALL_TOKEN).");
-  process.exit(1);
-}
-if (!CONFIG.discordToken) {
-  console.error("❌ Missing Discord token (DISCORD_TOKEN).");
-  process.exit(1);
-}
-if (!CONFIG.discordChannelId) {
-  console.error("❌ Missing Discord channel ID (DISCORD_CHANNEL_ID).");
-  process.exit(1);
+async function ask(question) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  return new Promise((resolve) =>
+    rl.question(question, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    })
+  );
 }
 
-HaxballJS.then(async (HBInit) => {
+async function getConfig() {
+  let haxballToken = process.env.HAXBALL_TOKEN;
+  let discordToken = process.env.DISCORD_TOKEN;
+  let discordChannelId = process.env.DISCORD_CHANNEL_ID;
+  let roomName = process.env.ROOM_NAME || "Teleese Room :)";
+  let maxPlayers = parseInt(process.env.MAX_PLAYERS || "10");
+  let isPublic = process.env.PUBLIC_ROOM === "false" ? false : true;
+
+  // Ask interactively if running locally
+  if (!haxballToken) haxballToken = await ask("Enter your Haxball token: ");
+  if (!discordToken) discordToken = await ask("Enter your Discord bot token: ");
+  if (!discordChannelId)
+    discordChannelId = await ask("Enter your Discord channel ID: ");
+
+  return {
+    roomName,
+    maxPlayers,
+    public: isPublic,
+    haxballToken,
+    discordToken,
+    discordChannelId,
+  };
+}
+
+(async () => {
+  const CONFIG = await getConfig();
+
+  if (!CONFIG.haxballToken || !CONFIG.discordToken || !CONFIG.discordChannelId) {
+    console.error("❌ Missing configuration. Exiting...");
+    process.exit(1);
+  }
+
+  const HBInit = await HaxballJS;
   const room = HBInit({
     roomName: CONFIG.roomName,
     maxPlayers: CONFIG.maxPlayers,
@@ -41,7 +61,7 @@ HaxballJS.then(async (HBInit) => {
     token: CONFIG.haxballToken,
   });
 
-  console.log("[HAXBALL] Room created successfully ✅");
+  console.log(`[HAXBALL] Room created successfully ✅ (${CONFIG.roomName})`);
 
   const client = new Client({
     intents: [
@@ -81,4 +101,4 @@ HaxballJS.then(async (HBInit) => {
   };
 
   console.log("[CORE] Chat synchronization is live 🚀");
-});
+})();
