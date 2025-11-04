@@ -1,0 +1,42 @@
+name: Launch Haxball
+
+on:
+  workflow_dispatch:
+
+jobs:
+  start-room:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies manually
+        run: |
+          echo "📦 Installing required dependencies..."
+          npm install discord.js haxball.js
+
+      - name: Run Haxball Core (keep alive for 6 hours)
+        env:
+          HAXBALL_TOKEN: ${{ secrets.HAXBALL_TOKEN }}
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+        run: |
+          echo "🚀 Starting Haxball ↔ Discord sync (6h runtime)..."
+          node core.js &
+          PID=$!
+          # keep it alive for 6 hours = 21600 seconds
+          for i in $(seq 1 21600); do
+            if ! ps -p $PID > /dev/null; then
+              echo "❌ Process ended early (PID $PID). Exiting..."
+              exit 1
+            fi
+            sleep 1
+          done
+          echo "⏰ 6 hours reached — stopping process."
+          kill $PID || true
