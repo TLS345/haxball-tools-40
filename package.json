@@ -1,7 +1,7 @@
 {
-  "name": "haxball-discord-sync",
+  "name": "haxball-tools-40",
   "version": "1.0.0",
-  "description": "Bot que sincroniza una sala de Haxball con Discord vía webhook o bot.",
+  "description": "Sync Haxball with Discord :)",
   "main": "core.js",
   "scripts": {
     "start": "node core.js",
@@ -22,6 +22,6 @@
     "sync",
     "automation"
   ],
-  "author": "TuNombre",
-  "license": "MIT"
+  "author": "Teleese",
+  "license": "Apache-2.0"
 }

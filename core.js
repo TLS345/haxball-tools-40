@@ -1,10 +1,11 @@
+// ============================
+//   Haxball Tools Day 40/365
+//     HAXBALL + DISCORD 
+//       By TLS/Teleese
+// ============================
+
 const HaxballJS = require("haxball.js");
 const { Client, GatewayIntentBits } = require("discord.js");
-
-// ============================
-// HAXBALL + DISCORD SYNC (CJS)
-// ============================
-
 const TOKEN = process.env.HAXBALL_TOKEN;
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const DISCORD_CHANNEL = process.env.DISCORD_CHANNEL_ID;
@@ -44,7 +45,6 @@ HaxballJS.then((HBInit) => {
     if (channel) channel.send(`✅ Haxball room created: ${link}`);
   };
 
-  // === Haxball → Discord ===
   room.onPlayerJoin = (player) => {
     console.log(`🟢 ${player.name} joined`);
     const channel = client.channels.cache.get(DISCORD_CHANNEL);
@@ -63,15 +63,12 @@ HaxballJS.then((HBInit) => {
     if (channel) channel.send(`💬 **${player.name}:** ${msg}`);
   };
 
-  // === Discord → Haxball ===
   client.on("messageCreate", (msg) => {
-    // Ignora bots y otros canales
     if (msg.author.bot || msg.channel.id !== DISCORD_CHANNEL) return;
 
     const content = msg.content.trim();
     if (!content) return;
 
-    // Manda mensaje al chat de Haxball
     try {
       if (room && typeof room.sendAnnouncement === "function") {
         room.sendAnnouncement(
