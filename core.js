@@ -1,6 +1,5 @@
 const HaxballJS = require("haxball.js");
 const { Client, GatewayIntentBits } = require("discord.js");
-require("dotenv").config();
 
 // ============================
 // HAXBALL + DISCORD SYNC (CJS)
@@ -11,7 +10,7 @@ const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const DISCORD_CHANNEL = process.env.DISCORD_CHANNEL_ID;
 
 if (!TOKEN || !DISCORD_TOKEN || !DISCORD_CHANNEL) {
-  console.error("❌ Missing .env configuration.");
+  console.error("❌ Missing configuration. Exiting...");
   process.exit(1);
 }
 
@@ -45,6 +44,7 @@ HaxballJS.then((HBInit) => {
     if (channel) channel.send(`✅ Haxball room created: ${link}`);
   };
 
+  // === Haxball → Discord ===
   room.onPlayerJoin = (player) => {
     console.log(`🟢 ${player.name} joined`);
     const channel = client.channels.cache.get(DISCORD_CHANNEL);
@@ -63,5 +63,31 @@ HaxballJS.then((HBInit) => {
     if (channel) channel.send(`💬 **${player.name}:** ${msg}`);
   };
 
+  // === Discord → Haxball ===
+  client.on("messageCreate", (msg) => {
+    // Ignora bots y otros canales
+    if (msg.author.bot || msg.channel.id !== DISCORD_CHANNEL) return;
+
+    const content = msg.content.trim();
+    if (!content) return;
+
+    // Manda mensaje al chat de Haxball
+    try {
+      if (room && typeof room.sendAnnouncement === "function") {
+        room.sendAnnouncement(
+          `[Discord] ${msg.author.username}: ${content}`,
+          null,
+          0x87cefa,
+          "bold"
+        );
+      } else {
+        console.error("⚠️ room.sendAnnouncement no está disponible aún");
+      }
+    } catch (err) {
+      console.error("❌ Error enviando mensaje al Haxball:", err);
+    }
+  });
+
   console.log("[SYNC] Discord ↔ Haxball chat active 🚀");
 });
+
