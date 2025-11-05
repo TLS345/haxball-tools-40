@@ -27,9 +27,8 @@ async function getConfig() {
   let discordChannelId = process.env.DISCORD_CHANNEL_ID;
   let roomName = process.env.ROOM_NAME || "Teleese Room :)";
   let maxPlayers = parseInt(process.env.MAX_PLAYERS || "10");
-  let isPublic = process.env.PUBLIC_ROOM === "false" ? false : true;
+  let isPublic = process.env.PUBLIC === "true";
 
-  // Ask interactively if running locally
   if (!haxballToken) haxballToken = await ask("Enter your Haxball token: ");
   if (!discordToken) discordToken = await ask("Enter your Discord bot token: ");
   if (!discordChannelId)
@@ -85,17 +84,23 @@ async function getConfig() {
 
   client.on("messageCreate", (msg) => {
     if (msg.channel.id === CONFIG.discordChannelId && !msg.author.bot) {
-      room.sendChat(`[Discord] ${msg.author.username}: ${msg.content}`);
+      room.sendAnnouncement(
+        `[Discord] ${msg.author.username}: ${msg.content}`,
+        null,
+        0x87cefa,
+        "bold"
+      );
     }
   });
 
   room.onPlayerJoin = (player) => {
-    room.sendChat(`👋 Welcome ${player.name}!`);
+    room.sendAnnouncement(`👋 Welcome ${player.name}!`, null, 0x32cd32, "bold");
     const channel = client.channels.cache.get(CONFIG.discordChannelId);
     if (channel) channel.send(`🟢 **${player.name}** joined the room.`);
   };
 
   room.onPlayerLeave = (player) => {
+    room.sendAnnouncement(`👋 ${player.name} left the room.`, null, 0xff4500, "bold");
     const channel = client.channels.cache.get(CONFIG.discordChannelId);
     if (channel) channel.send(`🔴 **${player.name}** left the room.`);
   };
