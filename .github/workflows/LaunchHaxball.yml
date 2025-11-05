@@ -41,7 +41,7 @@ jobs:
       - name: Install dependencies manually
         run: |
           echo "📦 Installing required dependencies..."
-          npm install discord.js haxball.js dotenv
+          npm install 
 
       - name: Run Haxball Core (6h runtime)
         env:
