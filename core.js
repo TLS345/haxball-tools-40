@@ -52,66 +52,64 @@ async function getConfig() {
     process.exit(1);
   }
 
-  HaxballJS.then(async (HBInit) => {
-    const room = HBInit({
-      roomName: CONFIG.roomName,
-      maxPlayers: CONFIG.maxPlayers,
-      public: CONFIG.public,
-      token: CONFIG.haxballToken,
-    });
-
-    console.log(`[HAXBALL] Room created successfully ✅ (${CONFIG.roomName})`);
-
-    room.onRoomLink = (link) => {
-      console.log(`🔗 Room link: ${link}`);
-    };
-
-    const client = new Client({
-      intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-      ],
-    });
-
-    client.once("ready", () => {
-      console.log(`[DISCORD] Logged in as ${client.user.tag}`);
-    });
-
-    await client.login(CONFIG.discordToken);
-
-    room.onPlayerChat = (player, message) => {
-      console.log(`[Haxball] ${player.name}: ${message}`);
-      const channel = client.channels.cache.get(CONFIG.discordChannelId);
-      if (channel) channel.send(`**${player.name}:** ${message}`);
-    };
-
-    client.on("messageCreate", (msg) => {
-      if (msg.channel.id === CONFIG.discordChannelId && !msg.author.bot) {
-        room.sendAnnouncement(
-          `[Discord] ${msg.author.username}: ${msg.content}`,
-          null,
-          0x87cefa,
-          "bold"
-        );
-      }
-    });
-
-    room.onPlayerJoin = (player) => {
-      room.sendAnnouncement(`👋 Welcome ${player.name}!`, null, 0x32cd32, "bold");
-      const channel = client.channels.cache.get(CONFIG.discordChannelId);
-      if (channel) channel.send(`🟢 **${player.name}** joined the room.`);
-    };
-
-    room.onPlayerLeave = (player) => {
-      room.sendAnnouncement(`👋 ${player.name} left the room.`, null, 0xff4500, "bold");
-      const channel = client.channels.cache.get(CONFIG.discordChannelId);
-      if (channel) channel.send(`🔴 **${player.name}** left the room.`);
-    };
-
-    console.log("[CORE] Chat synchronization is live 🚀");
-  }).catch((err) => {
-    console.error("❌ Error initializing Haxball:", err);
-    process.exit(1);
+  const HBInit = HaxballJS;
+  const room = HBInit({
+    roomName: CONFIG.roomName,
+    maxPlayers: CONFIG.maxPlayers,
+    public: CONFIG.public,
+    token: CONFIG.haxballToken,
   });
+
+  room.onRoomLink = (link) => {
+    console.log(`🌐 Room link: ${link}`);
+    const channel = client.channels.cache.get(CONFIG.discordChannelId);
+    if (channel) channel.send(`🌐 **Haxball room is live!**\n${link}`);
+  };
+
+  console.log(`[HAXBALL] Room created successfully ✅ (${CONFIG.roomName})`);
+
+  const client = new Client({
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.MessageContent,
+    ],
+  });
+
+  client.once("ready", () => {
+    console.log(`[DISCORD] Logged in as ${client.user.tag}`);
+  });
+
+  await client.login(CONFIG.discordToken);
+
+  room.onPlayerChat = (player, message) => {
+    console.log(`[Haxball] ${player.name}: ${message}`);
+    const channel = client.channels.cache.get(CONFIG.discordChannelId);
+    if (channel) channel.send(`**${player.name}:** ${message}`);
+  };
+
+  client.on("messageCreate", (msg) => {
+    if (msg.channel.id === CONFIG.discordChannelId && !msg.author.bot) {
+      room.sendAnnouncement(
+        `[Discord] ${msg.author.username}: ${msg.content}`,
+        null,
+        0x87cefa,
+        "bold"
+      );
+    }
+  });
+
+  room.onPlayerJoin = (player) => {
+    room.sendAnnouncement(`👋 Welcome ${player.name}!`, null, 0x32cd32, "bold");
+    const channel = client.channels.cache.get(CONFIG.discordChannelId);
+    if (channel) channel.send(`🟢 **${player.name}** joined the room.`);
+  };
+
+  room.onPlayerLeave = (player) => {
+    room.sendAnnouncement(`👋 ${player.name} left the room.`, null, 0xff4500, "bold");
+    const channel = client.channels.cache.get(CONFIG.discordChannelId);
+    if (channel) channel.send(`🔴 **${player.name}** left the room.`);
+  };
+
+  console.log("[CORE] Chat synchronization is live 🚀");
 })();
